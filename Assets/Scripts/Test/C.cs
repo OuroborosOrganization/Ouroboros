@@ -5,7 +5,8 @@ using UnityEngine;
 public class C : MonoBehaviour
 {
     [SerializeField] private float Distance = 10.0f;
-    [SerializeField] private float Angel = 70;
+    [SerializeField] private float OriAngel = 60f;
+    [SerializeField] private float Angel = 60;
     [SerializeField] private Vector2 Point = Vector2.zero;
     [SerializeField] private float speed = 1f;
     public bool ist = false;
@@ -32,7 +33,7 @@ public class C : MonoBehaviour
         }
         if (back)
         {
-            Angel = 70;
+            Angel = OriAngel;
             transform.position = new Vector3(0, Distance * Mathf.Sin(Angel / 180 * Mathf.PI), -Distance * Mathf.Cos(Angel / 180 * Mathf.PI));
             transform.localEulerAngles = new Vector3(Angel, 0, 0);
             back = false;

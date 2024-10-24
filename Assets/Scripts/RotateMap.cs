@@ -7,20 +7,15 @@ public class NewBehaviourScript : MonoBehaviour
     // Start is called before the first frame update
     [SerializeField] public float rotationSpeed = 90f;
     int count = 0;
-    void Start()
+    private void Start()
     {
-        
+        GameManager.Instance.LevelChange += startRotate;
     }
-
     // Update is called once per frame
-    void Update()
+    private void startRotate(int Level)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            StartCoroutine(RotateMap());
-        }
+        StartCoroutine("RotateMap");
     }
-
     private IEnumerator RotateMap()
     {
         Quaternion originalRotation = transform.rotation;

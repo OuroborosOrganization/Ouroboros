@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,7 +10,6 @@ public class GameManager : MonoBehaviour
     public static KeyCode Down = KeyCode.S;
     public static KeyCode Left = KeyCode.A;
     public static KeyCode Right = KeyCode.D;
-    public static KeyCode ManuKey = KeyCode.Escape;
     #endregion
     #region µ¥Àý
     public static GameManager instance;
@@ -36,6 +36,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private static int AllLevels = 6;
     [SerializeField] private int CurLevel = 1;
     [SerializeField] private int[] AllLevelsMoveTimes = new int[] { 4,6,8,9,12,13};
+    private float Fluency;
+    public float DeadTime;
+    public List<GameObject> AllLevelsObjs = new List<GameObject> ();
     [SerializeField] private Material diedMaterial;
     [SerializeField] private float AnimationTime = 5f;
     [SerializeField] private float AnimationTimer = 0;
@@ -89,6 +92,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public event Action<int> LevelChange;
+
     public void GameOver()
     {
         WhiteSnake?.Died();
@@ -96,10 +101,17 @@ public class GameManager : MonoBehaviour
     }
     void ChangeLevel(int Level)
     {
-
+        if(Level == AllLevels)
+        {
+            return;
+        }
+        AllLevelsObjs[Level - 1].SetActive(false);
+        AllLevelsObjs[Level].SetActive(true);
     }
     void Win(int Level)
     {
+        Fluency = WhiteSnake.Fluency;
+        DeadTime = WhiteSnake.DeadTime;
         allBody = WhiteSnake.Body;
         for (int i = 0; i < BlackSnake.Body.Count; i++)
         {
@@ -129,6 +141,29 @@ public class GameManager : MonoBehaviour
             AnimationTimer += AnimationDeltTime / speed;
             yield return new WaitForSecondsRealtime(AnimationDeltTime / speed);
         }
+        float DeadTimer = 0;
+
+        Shader.SetGlobalFloat("unityTime", DeadTimer);
+        for (int i = 0; i < allBody.Count; i += (int)(transform.localScale.x / Fluency) / 3)
+        {
+            allBody[i].transform.localScale = Vector3.one * transform.localScale.x * UnityEngine. Random.Range(0.3f, 0.9f);
+            allBody[i].GetComponent<MeshRenderer>().material = new Material(GameManager.Instance.DiedMaterial);
+            allBody[i].AddComponent<BodyDestory>();
+            allBody[i].GetComponent<MeshRenderer>().material.SetFloat("_ShaderSatrtTime", DeadTimer);
+            allBody.Remove(allBody[i]);
+        }
+        for (int i = 0; i < allBody.Count; i++)
+        {
+            Destroy(allBody[i]);
+        }
+        allBody.Clear();
+        while(DeadTimer<DeadTime)
+        {
+            Shader.SetGlobalFloat("unityTime", DeadTimer);
+            DeadTimer += Time.fixedDeltaTime;
+            yield return new WaitForSecondsRealtime(Time.fixedDeltaTime);
+        }
+        LevelChange(CurLevel);
         yield break;
     }
     public void ChangeSide(int fiction)
@@ -155,7 +190,9 @@ public class GameManager : MonoBehaviour
     }
     private void Start()
     {
+        LevelChange += ChangeLevel;
         diedMaterial = Resources.Load<Material>("Material/Died");
+        UIManager.Instance.gameObject.SetActive(true);
     }
     private void Update()
     {

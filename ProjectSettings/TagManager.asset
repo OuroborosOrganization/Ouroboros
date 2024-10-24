@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Untouchable
   - Barrier
+  - BlackBody
+  - WhiteBody
   layers:
   - Default
   - TransparentFX

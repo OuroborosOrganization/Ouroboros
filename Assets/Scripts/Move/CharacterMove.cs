@@ -16,14 +16,14 @@ public class CharacterMove : MonoBehaviour
     [SerializeField]private bool isMoving = false;
     [SerializeField]private Direction LastDirection = Direction.NULL;
     [SerializeField]private Direction CurDirection = Direction.NULL;
-    [SerializeField]private float Fluency = 0.02f;
+    public float Fluency = 0.02f;
     [SerializeField] private int speed = 1;
     [Header("颜色(0为黑色，1为白色)")]
     public int BodyColor = 0;
     [Header("死亡效果")]
     [SerializeField] private bool isDead = false;
     private float DeadTimer = 0f;
-    [SerializeField] private float DeadTime = 1.5f;
+    public float DeadTime = 1.5f;
     [Header("资源")]
     [SerializeField] GameObject BlackBody;
     [SerializeField] GameObject WhiteBody;
@@ -131,6 +131,10 @@ public class CharacterMove : MonoBehaviour
             if(CurDirection!=Direction.NULL&&CurDirection != GetBackDir(LastDirection)&&CurDirection != LastDirection&&!isMoving)
             {
                 isMoving = true;
+                Vector3 MoveDir = (CurDirection == Direction.Left) ? Vector3.left : (CurDirection == Direction.Right) ? Vector3.right : (CurDirection == Direction.Up) ? Vector3.forward : Vector3.back;
+                BoxCollider b = GetComponent<BoxCollider>();
+                b.size += ((MoveDir.x == 0) ? Vector3.forward : Vector3.right) * 0.05f;
+                b.center += MoveDir * 0.025f;
                 LastDirection = CurDirection;
             }
         }
@@ -172,17 +176,21 @@ public class CharacterMove : MonoBehaviour
                 Destroy(Body[i]);
             }
             Body.Clear();
-            DeadTimer += Time.deltaTime;
+            DeadTimer += Time.fixedDeltaTime;
         }
     }
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Untouchable")
+        if(other.tag == "Untouchable"|| other.tag == "BlackBody" && BodyColor == 0|| other.tag == "WhiteBody" && BodyColor == 1)
         {
             GameManager.Instance.GameOver();
         }
         if(other.tag == "Barrier")
         {
+            Vector3 MoveDir = (CurDirection == Direction.Left) ? Vector3.left : (CurDirection == Direction.Right) ? Vector3.right : (CurDirection == Direction.Up) ? Vector3.forward : Vector3.back;
+            BoxCollider b = GetComponent<BoxCollider>();
+            b.size -= ((MoveDir.x == 0) ? Vector3.forward : Vector3.right) * 0.05f;
+            b.center -= MoveDir * 0.025f;
             isMoving = false;
             GameManager.Instance.ChangeSide(BodyColor);
         }

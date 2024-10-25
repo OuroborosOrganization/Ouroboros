@@ -87,6 +87,7 @@ public class UIManager : MonoBehaviour
     {
         GameManager.Instance.WhiteSnake.Moveable = false;
         TeachText.gameObject.SetActive(true);
+        TeachText.SetText("");
         Time.timeScale = 0;
         for (int i = 0; i < TeachTexts.Length; i++)
         {

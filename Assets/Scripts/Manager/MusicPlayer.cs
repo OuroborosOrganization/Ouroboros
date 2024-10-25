@@ -38,4 +38,9 @@ public class MusicPlayer : MonoBehaviour
         Mplayer.loop = true;
         Mplayer.Play();
     }
+
+    public void SoundChange(float f)
+    {
+        Mplayer.volume = f;
+    }
 }

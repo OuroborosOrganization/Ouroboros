@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 255443873358930075}
   - component: {fileID: 8823092787006896831}
   - component: {fileID: 4803520637922060135}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: BlackHead
   m_TagString: BlackBody
   m_Icon: {fileID: 0}

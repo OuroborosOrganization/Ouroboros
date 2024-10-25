@@ -7,9 +7,23 @@ public class UIInterect : MonoBehaviour
 {
     public void OpenSetting()
     {
-
+        
+        for(int i = 0;i<transform.childCount;i++)
+        {
+            if (transform.GetChild(i).gameObject.name == "Menu")
+            {
+                transform.GetChild(i).gameObject.SetActive(false);
+            }
+            if (transform.GetChild(i).gameObject.name == "Settings")
+            {
+                transform.GetChild(i).gameObject.SetActive(true);
+            }
+        }
     }
-    public void CloseSetting() { }
+    public void CloseSetting() {
+        this.gameObject.SetActive(false);
+        Time.timeScale = 1.0f;
+    }
     public void BackGame() { 
         this.gameObject.SetActive(false);
         Time.timeScale = 1.0f;

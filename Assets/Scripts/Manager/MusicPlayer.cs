@@ -35,6 +35,7 @@ public class MusicPlayer : MonoBehaviour
         BackGround = Resources.Load<AudioClip>("Music/BackGround");
         Mplayer = GetComponent<AudioSource>();
         Mplayer.clip = BackGround;
+        Mplayer.loop = true;
         Mplayer.Play();
     }
 }

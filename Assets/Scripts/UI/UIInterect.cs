@@ -20,7 +20,8 @@ public class UIInterect : MonoBehaviour
     }
     public void StartNewGame()
     {
-        PlayerPrefs.DeleteAll();
+        PlayerPrefs.DeleteKey("AutoSave");
+        PlayerPrefs.DeleteKey("isSaved");
         SceneManager.LoadScene(1);
     }
     public void ContinueGame()
@@ -29,5 +30,19 @@ public class UIInterect : MonoBehaviour
         {
             SceneManager.LoadScene(1);
         }
+    }
+    public void Restart()
+    {
+        Time.timeScale = 1.0f;
+        GameManager.Instance.Restart();
+        gameObject.SetActive(false);
+    }
+    public void BackToMenu()
+    {
+        Time.timeScale = 1;
+        gameObject.SetActive(false);
+        Destroy(GameManager.Instance.gameObject);
+        Destroy(UIManager.Instance.gameObject);
+        SceneManager.LoadScene(0);
     }
 }

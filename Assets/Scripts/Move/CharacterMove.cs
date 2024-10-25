@@ -123,14 +123,6 @@ public class CharacterMove : MonoBehaviour
     { 
         BlackBody = Resources.Load<GameObject>("Pre/BlackBody");
         WhiteBody = Resources.Load<GameObject>("Pre/WhiteBody");
-        if (BodyColor == 0)
-        {
-            GameManager.Instance.BlackSnake = this;
-        }
-        else
-        {
-            GameManager.Instance.WhiteSnake = this;
-        }
         GameManager.Instance.Fluency = Fluency;
         GameManager.Instance.DeadTime = DeadTime;
     }
@@ -176,6 +168,7 @@ public class CharacterMove : MonoBehaviour
             */
             for(int i = 0;i<Body.Count;i+=(int)(transform.localScale.x/Fluency)/3)
             {
+                Body[i].gameObject.GetComponent<BoxCollider>().enabled = false;
                 Body[i].transform.localScale = Vector3.one * transform.localScale.x*UnityEngine.Random.Range(0.3f,0.9f);
                 Body[i].GetComponent<MeshRenderer>().material = new Material(GameManager.Instance.DiedMaterial);
                 Body[i].AddComponent<BodyDestory>();
@@ -192,7 +185,7 @@ public class CharacterMove : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Untouchable"/*|| (other.tag == "BlackBody" && BodyColor == 0)|| (other.tag == "WhiteBody" && BodyColor == 1)*/)
+        if(other.tag == "Untouchable"|| (other.tag == "BlackBody" && BodyColor == 0)|| (other.tag == "WhiteBody" && BodyColor == 1))
         {
             Debug.Log(other.tag+other.name);
             GameManager.Instance.GameOver();

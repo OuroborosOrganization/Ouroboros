@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
                 instance = FindAnyObjectByType<GameManager>();
                 if(instance == null)
                 {
+                    isExist = true;
                     GameObject gameObject = new GameObject("GameManager");
                     instance = gameObject.AddComponent<GameManager>();
                     DontDestroyOnLoad(gameObject);
@@ -33,6 +34,7 @@ public class GameManager : MonoBehaviour
         } 
     }
     #endregion
+    public static bool isExist = false;
     [SerializeField] private static int AllLevels = 6;
     public int CurLevel = 1;
     [SerializeField] private int[] AllLevelsMoveTimes = new int[] { 4,6,8,9,12,13};
@@ -87,10 +89,10 @@ public class GameManager : MonoBehaviour
         set
         {
             moveTimes = value;
+            UIManager.Instance.ChangeStep();
             if (moveTimes == 0)
             {
-                //StartCoroutine("Wait1S");
-                  
+                StartCoroutine("Wait1S");  
             }
         }
     }
@@ -99,24 +101,33 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        Debug.Log("Over");
         WhiteSnake?.Died();
         BlackSnake?.Died();
+        UIManager.Instance.Invoke("RestartUI", 3f);
     }
     void ChangeLevel(int Level)
     {
         AllLevelsObjs[CurLevel - 1].SetActive(false);
         if (Level > AllLevels)
         {
+            instance = null;
+            UIManager.Instance.WinUI();
+            Destroy(gameObject);
             return;
-        }
+        }         
         CurLevel = Level;
-        moveTimes = AllLevelsMoveTimes[Level - 1];
+        MoveTimes = AllLevelsMoveTimes[Level - 1];
         whiteArrive = false;
         blackArrive = false;
         AllLevelsObjs[Level-1].SetActive(true);
         WhiteStarts[Level - 1].Func();
         BlackStarts[Level - 1].Func();
+        if (Level == 1 && PlayerPrefs.GetInt("Teach", 0) == 0)
+        {
+            StartCoroutine(UIManager.Instance.Teach());
+            PlayerPrefs.SetInt("Teach", 1);
+            PlayerPrefs.Save();
+        }
         PlayerPrefs.SetInt("AutoSave",Level);
         PlayerPrefs.SetInt("isSaved", 1);
         PlayerPrefs.Save();
@@ -132,14 +143,14 @@ public class GameManager : MonoBehaviour
         Destroy(BlackSnake.gameObject);
         StartCoroutine("WinAnimation");
     }
-    //IEnumerator Wait1S()
-    //{
-    //    yield return new WaitForSeconds(1);
-    //    if (!(whiteArrive && blackArrive))
-    //    {
-    //        GameOver();
-    //    }
-    //}
+    IEnumerator Wait1S()
+    {
+        yield return new WaitForSeconds(1);
+        if (!(whiteArrive && blackArrive))
+        {
+            GameOver();
+        }
+    }
     IEnumerator WinAnimation()
     {
         int n = allBody.Count;
@@ -215,6 +226,13 @@ public class GameManager : MonoBehaviour
         diedMaterial = Resources.Load<Material>("Material/Died");
         LevelChange?.Invoke(PlayerPrefs.GetInt("AutoSave", 1));
         UIManager.Instance.gameObject.SetActive(true);
-        moveTimes = AllLevelsMoveTimes[0];
     }
+    public void StartNewGame()
+    {
+        LevelChange?.Invoke(1);
+    }
+    public void Restart()
+    {
+        LevelChange?.Invoke(CurLevel);
+    }    
 }

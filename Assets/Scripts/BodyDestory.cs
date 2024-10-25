@@ -18,7 +18,6 @@ public class BodyDestory : MonoBehaviour
     {
         timer += Time.deltaTime;
         Vector4 temp = GetComponent<MeshRenderer>().material.GetVector("_FinalColor");
-        Debug.Log(temp);
         GetComponent<MeshRenderer>().material.SetVector("_FinalColor", new Vector4(temp.x, temp.y, temp.z, (1 - timer * timer / time / time)));
         if (timer>time)
         {

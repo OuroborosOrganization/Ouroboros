@@ -34,21 +34,23 @@ public class GameManager : MonoBehaviour
     }
     #endregion
     [SerializeField] private static int AllLevels = 6;
-    [SerializeField] private int CurLevel = 1;
+    public int CurLevel = 1;
     [SerializeField] private int[] AllLevelsMoveTimes = new int[] { 4,6,8,9,12,13};
-    private float Fluency;
+    public float Fluency;
     public float DeadTime;
     public List<GameObject> AllLevelsObjs = new List<GameObject> ();
     [SerializeField] private Material diedMaterial;
     [SerializeField] private float AnimationTime = 5f;
     [SerializeField] private float AnimationTimer = 0;
     [SerializeField] private float AnimationDeltTime = 0.02f;
+    public StartDetect[] WhiteStarts = new StartDetect[AllLevels];
+    public StartDetect[] BlackStarts = new StartDetect[AllLevels];
     List<GameObject> allBody;
     public Material DiedMaterial
     { get { return diedMaterial; } }
     public CharacterMove WhiteSnake;
     public CharacterMove BlackSnake;
-    private bool whiteArrive =false;
+    [SerializeField] private bool whiteArrive =false;
     public bool WhiteArrive
     {
         set
@@ -63,7 +65,7 @@ public class GameManager : MonoBehaviour
         }
         get { return whiteArrive; }
     }
-    private bool blackArrive = false;
+    [SerializeField] private bool blackArrive = false;
     public bool BlackArrive
     {
         set 
@@ -78,7 +80,7 @@ public class GameManager : MonoBehaviour
         }
         get { return blackArrive; }
     }
-    private int moveTimes;
+    [SerializeField]private int moveTimes;
     public int MoveTimes
     {
         get { return moveTimes; }
@@ -87,7 +89,8 @@ public class GameManager : MonoBehaviour
             moveTimes = value;
             if (moveTimes == 0)
             {
-                GameOver();
+                StartCoroutine("Wait1S");
+                  
             }
         }
     }
@@ -96,22 +99,30 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        Debug.Log("Over");
         WhiteSnake?.Died();
         BlackSnake?.Died();
     }
     void ChangeLevel(int Level)
     {
-        if(Level == AllLevels)
+        AllLevelsObjs[CurLevel - 1].SetActive(false);
+        if (Level > AllLevels)
         {
             return;
         }
-        AllLevelsObjs[Level - 1].SetActive(false);
-        AllLevelsObjs[Level].SetActive(true);
+        CurLevel = Level;
+        moveTimes = AllLevelsMoveTimes[Level - 1];
+        whiteArrive = false;
+        blackArrive = false;
+        AllLevelsObjs[Level-1].SetActive(true);
+        WhiteStarts[Level - 1].Func();
+        BlackStarts[Level - 1].Func();
+        PlayerPrefs.SetInt("AutoSave",Level);
+        PlayerPrefs.SetInt("isSaved", 1);
+        PlayerPrefs.Save();
     }
     void Win(int Level)
     {
-        Fluency = WhiteSnake.Fluency;
-        DeadTime = WhiteSnake.DeadTime;
         allBody = WhiteSnake.Body;
         for (int i = 0; i < BlackSnake.Body.Count; i++)
         {
@@ -121,9 +132,18 @@ public class GameManager : MonoBehaviour
         Destroy(BlackSnake.gameObject);
         StartCoroutine("WinAnimation");
     }
+    IEnumerator Wait1S()
+    {
+        yield return new WaitForSeconds(1);
+        if (!(whiteArrive && blackArrive))
+        {
+            GameOver();
+        }
+    }
     IEnumerator WinAnimation()
     {
         int n = allBody.Count;
+        AnimationTimer = 0;
         while(AnimationTimer <= AnimationTime)
         {
             for (int i = 0; i < n; i++)
@@ -163,7 +183,7 @@ public class GameManager : MonoBehaviour
             DeadTimer += Time.fixedDeltaTime;
             yield return new WaitForSecondsRealtime(Time.fixedDeltaTime);
         }
-        LevelChange(CurLevel);
+        LevelChange?.Invoke(CurLevel+1);
         yield break;
     }
     public void ChangeSide(int fiction)
@@ -172,12 +192,12 @@ public class GameManager : MonoBehaviour
             WhiteSnake.Moveable = false;
             BlackSnake.Moveable = true;
         }
-        if (blackArrive)
+        else if (blackArrive)
         {
             WhiteSnake.Moveable = true;
             BlackSnake.Moveable = false;
         }
-            if (fiction == 0)
+        else if (fiction == 0)
         {
             WhiteSnake.Moveable = true;
             BlackSnake.Moveable = false;
@@ -187,15 +207,14 @@ public class GameManager : MonoBehaviour
             WhiteSnake.Moveable = false;
             BlackSnake.Moveable = true;
         }
+        MoveTimes--;
     }
     private void Start()
     {
         LevelChange += ChangeLevel;
         diedMaterial = Resources.Load<Material>("Material/Died");
+        LevelChange?.Invoke(PlayerPrefs.GetInt("AutoSave", 1));
         UIManager.Instance.gameObject.SetActive(true);
-    }
-    private void Update()
-    {
-        
+        moveTimes = AllLevelsMoveTimes[0];
     }
 }

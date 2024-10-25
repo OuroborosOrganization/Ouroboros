@@ -45,14 +45,18 @@ public class CharacterMove : MonoBehaviour
         for (int i = 0; i < speed; i++)
         {
             GameObject t = Instantiate(temp, Pos-MoveDir*Fluency*(2*i+1)/2,Quaternion.identity ) as GameObject;
-            t.transform.localScale = new Vector3((MoveDir.x==0)?transform.localScale.x:Mathf.Abs(MoveDir.x)*Fluency,transform.localScale.y, (MoveDir.z == 0) ? transform.localScale.z : Mathf.Abs(MoveDir.z) * Fluency);
             Body.Add(t);
-            if(BodyColor == 0)
+            if(BodyColor == 1)
             {
                 GameObject p = GameObject.Find("WhiteBodyCollection");
                 if (p==null)
                 {
                     p = new GameObject("WhiteBodyCollection");
+                    if(transform.parent != null)
+                    {
+                        p.transform.parent = transform.parent;
+                        p.transform.localScale = Vector3.one;
+                    }
                 }
                 t.transform.SetParent(p.transform);
             }
@@ -62,10 +66,15 @@ public class CharacterMove : MonoBehaviour
                 if (p == null)
                 {
                     p = new GameObject("BlackBodyCollection");
+                    if (transform.parent != null)
+                    {
+                        p.transform.parent = transform.parent;
+                        p.transform.localScale = Vector3.one;
+                    }
                 }
                 t.transform.SetParent(p.transform);
             }
-
+            t.transform.localScale = new Vector3((MoveDir.x == 0) ? transform.localScale.x : Mathf.Abs(MoveDir.x) * Fluency, transform.localScale.y, (MoveDir.z == 0) ? transform.localScale.z : Mathf.Abs(MoveDir.z) * Fluency);
         }
     }
     public void Died()
@@ -122,6 +131,8 @@ public class CharacterMove : MonoBehaviour
         {
             GameManager.Instance.WhiteSnake = this;
         }
+        GameManager.Instance.Fluency = Fluency;
+        GameManager.Instance.DeadTime = DeadTime;
     }
     private void Update()
     {
@@ -181,8 +192,9 @@ public class CharacterMove : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Untouchable"|| other.tag == "BlackBody" && BodyColor == 0|| other.tag == "WhiteBody" && BodyColor == 1)
+        if(other.tag == "Untouchable"|| (other.tag == "BlackBody" && BodyColor == 0)|| (other.tag == "WhiteBody" && BodyColor == 1))
         {
+            Debug.Log(other.tag+other.name);
             GameManager.Instance.GameOver();
         }
         if(other.tag == "Barrier")

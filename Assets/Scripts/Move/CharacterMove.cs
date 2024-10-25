@@ -192,7 +192,7 @@ public class CharacterMove : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Untouchable"|| (other.tag == "BlackBody" && BodyColor == 0)|| (other.tag == "WhiteBody" && BodyColor == 1))
+        if(other.tag == "Untouchable"/*|| (other.tag == "BlackBody" && BodyColor == 0)|| (other.tag == "WhiteBody" && BodyColor == 1)*/)
         {
             Debug.Log(other.tag+other.name);
             GameManager.Instance.GameOver();

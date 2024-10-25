@@ -89,7 +89,7 @@ public class GameManager : MonoBehaviour
             moveTimes = value;
             if (moveTimes == 0)
             {
-                StartCoroutine("Wait1S");
+                //StartCoroutine("Wait1S");
                   
             }
         }
@@ -132,14 +132,14 @@ public class GameManager : MonoBehaviour
         Destroy(BlackSnake.gameObject);
         StartCoroutine("WinAnimation");
     }
-    IEnumerator Wait1S()
-    {
-        yield return new WaitForSeconds(1);
-        if (!(whiteArrive && blackArrive))
-        {
-            GameOver();
-        }
-    }
+    //IEnumerator Wait1S()
+    //{
+    //    yield return new WaitForSeconds(1);
+    //    if (!(whiteArrive && blackArrive))
+    //    {
+    //        GameOver();
+    //    }
+    //}
     IEnumerator WinAnimation()
     {
         int n = allBody.Count;

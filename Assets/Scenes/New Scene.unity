@@ -456,9 +456,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1457438845}
-        m_TargetAssemblyTypeName: ButtonEvevt, Assembly-CSharp
-        m_MethodName: startGame
+      - m_Target: {fileID: 1457438846}
+        m_TargetAssemblyTypeName: UIInterect, Assembly-CSharp
+        m_MethodName: StartNewGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -696,6 +696,7 @@ GameObject:
   - component: {fileID: 1457438842}
   - component: {fileID: 1457438841}
   - component: {fileID: 1457438845}
+  - component: {fileID: 1457438846}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -798,6 +799,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b212ac7e4df95f143baeeb271894a082, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1457438846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1457438840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 927983b5c56058345bc5dcd7c63d7bc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1542829297

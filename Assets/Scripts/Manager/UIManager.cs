@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -119,6 +121,22 @@ public class UIManager : MonoBehaviour
     public void RestartUI()
     {
         Restart.SetActive(true);
+        Restart.GetComponent<Image>().color = Color.black;
         Time.timeScale = 0;
+        StartCoroutine(Black());
+    }
+    IEnumerator Black()
+    {
+        Image image = Restart.GetComponent<Image>();
+        float timer = 0;
+        yield return new WaitForSecondsRealtime(3);
+        while(timer < 3)
+        {
+            image.color = new Color(image.color.r, image.color.g, image.color.b, Mathf.Pow(Mathf.Abs((3 - timer) / 3), 0.2f));
+            timer += 0.01f;
+            yield return new WaitForSecondsRealtime(0.01f);
+        }
+        Time.timeScale = 1;
+        GameManager.Instance.Restart();
     }
 }

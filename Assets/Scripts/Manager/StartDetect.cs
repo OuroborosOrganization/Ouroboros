@@ -13,14 +13,20 @@ public class StartDetect : MonoBehaviour
         if(fiction == 0)
         {
             GameObject g = Instantiate(Resources.Load<GameObject>("Pre/BlackHead"), transform.position, transform.rotation, transform.parent) as GameObject;
-            g.transform.localScale = transform.localScale;
             GameManager.Instance.BlackSnake = g.GetComponent<CharacterMove>();
+            if(Level == 1)
+            {
+                g.GetComponent<CharacterMove>().teachmode = true;
+            }
         }
         else
         {
             GameObject g = Instantiate(Resources.Load<GameObject>("Pre/WhiteHead"), transform.position, transform.rotation, transform.parent) as GameObject;
-            g.transform.localScale = transform.localScale;
             GameManager.Instance.WhiteSnake = g.GetComponent<CharacterMove>();
+            if (Level == 1)
+            {
+                g.GetComponent<CharacterMove>().teachmode = true;
+            }
         }
     }
     private void Awake()
@@ -45,7 +51,6 @@ public class StartDetect : MonoBehaviour
     }
     private void OnTriggerStay(Collider other)
     {
-        
         if ((transform.position - other.transform.position).magnitude<=0.02&&!arrive)
         {
             CharacterMove o = other.GetComponent<CharacterMove>();

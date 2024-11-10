@@ -12,10 +12,11 @@ public enum Direction
 public class CharacterMove : MonoBehaviour
 {
     [Header("移动相关")]
+    public bool teachmode =false;
     [SerializeField]private bool moveable = false;
     [SerializeField]private bool isMoving = false;
     [SerializeField]private Direction LastDirection = Direction.NULL;
-    [SerializeField]private Direction CurDirection = Direction.NULL;
+    public Direction CurDirection = Direction.NULL;
     public float Fluency = 0.02f;
     [SerializeField] private int speed = 1;
     [Header("颜色(0为黑色，1为白色)")]
@@ -94,6 +95,8 @@ public class CharacterMove : MonoBehaviour
         if (Input.GetKeyDown(GameManager.Down)) { direction = Direction.Down; }
         if (Input.GetKeyDown(GameManager.Left)) { direction = Direction.Left; }
         if (Input.GetKeyDown(GameManager.Right)) { direction = Direction.Right; }
+        if (teachmode && direction != GameManager.Instance.TeachSteps[(4 - GameManager.Instance.MoveTimes<4)?(4 - GameManager.Instance.MoveTimes):0])
+        { return Direction.NULL; }
         return direction;
     }
     Direction GetBackDir(Direction d)
@@ -139,6 +142,7 @@ public class CharacterMove : MonoBehaviour
                 b.size += ((MoveDir.x == 0) ? Vector3.forward : Vector3.right) * 0.05f;
                 b.center += MoveDir * 0.025f;
                 LastDirection = CurDirection;
+                GameManager.Instance.CurMovingSnake = this;
             }
         }
         
@@ -187,7 +191,6 @@ public class CharacterMove : MonoBehaviour
     {
         if(other.tag == "Untouchable"|| (other.tag == "BlackBody" && BodyColor == 0)|| (other.tag == "WhiteBody" && BodyColor == 1))
         {
-            Debug.Log(other.tag+other.name);
             GameManager.Instance.GameOver();
         }
         if(other.tag == "Barrier")
@@ -197,6 +200,7 @@ public class CharacterMove : MonoBehaviour
             b.size -= ((MoveDir.x == 0) ? Vector3.forward : Vector3.right) * 0.05f;
             b.center -= MoveDir * 0.025f;
             isMoving = false;
+            GameManager.Instance.CurMovingSnake = null;
             GameManager.Instance.ChangeSide(BodyColor);
         }
     }

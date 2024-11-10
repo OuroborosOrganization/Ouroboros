@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public static KeyCode Down = KeyCode.S;
     public static KeyCode Left = KeyCode.A;
     public static KeyCode Right = KeyCode.D;
+    public static KeyCode RestartKey = KeyCode.Space;
     #endregion
     #region 单例
     public static GameManager instance;
@@ -38,6 +39,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private static int AllLevels = 6;
     public int CurLevel = 1;
     [SerializeField] private int[] AllLevelsMoveTimes = new int[] { 4,6,8,9,12,13};
+    [SerializeField] public Direction[] TeachSteps = new Direction[] {Direction.Up,Direction.Down,Direction.Left,Direction.Right};  
     public float Fluency;
     public float DeadTime;
     public List<GameObject> AllLevelsObjs = new List<GameObject> ();
@@ -52,18 +54,34 @@ public class GameManager : MonoBehaviour
     { get { return diedMaterial; } }
     public CharacterMove WhiteSnake;
     public CharacterMove BlackSnake;
+    private CharacterMove curMovingSnake;
+    private Direction curMovingDir;
+    public CharacterMove CurMovingSnake
+    {
+        get
+        {
+            return curMovingSnake;
+        }
+        set
+        {
+            curMovingSnake = value;
+            //可能为null
+            Move?.Invoke(curMovingSnake); 
+        }
+    }
     [SerializeField] private bool whiteArrive =false;
     public bool WhiteArrive
     {
         set
         {
             whiteArrive = value;
+            if (curMovingSnake == WhiteSnake) { CurMovingSnake = null; }
             if (whiteArrive & blackArrive)
             {
                 Win(CurLevel);
             }
             else
-                BlackSnake.Moveable = true;
+            BlackSnake.Moveable = true;
         }
         get { return whiteArrive; }
     }
@@ -73,6 +91,7 @@ public class GameManager : MonoBehaviour
         set 
         { 
             blackArrive = value;
+            if (curMovingSnake == BlackSnake) { CurMovingSnake = null; }
             if (whiteArrive & blackArrive)
             {
                 Win(CurLevel);
@@ -83,6 +102,7 @@ public class GameManager : MonoBehaviour
         get { return blackArrive; }
     }
     [SerializeField]private int moveTimes;
+    private bool over = false;
     public int MoveTimes
     {
         get { return moveTimes; }
@@ -98,15 +118,24 @@ public class GameManager : MonoBehaviour
     }
 
     public event Action<int> LevelChange;
+    public event Action<CharacterMove> Move;
+    public event Action<int> ColorChange;
+    public event Action<Direction> TeachFlash ;
 
     public void GameOver()
     {
-        WhiteSnake?.Died();
-        BlackSnake?.Died();
-        UIManager.Instance.Invoke("RestartUI", 3f);
+        if(!over)
+        {
+            over = true;
+            WhiteSnake?.Died();
+            BlackSnake?.Died();
+            CurMovingSnake = null;
+            UIManager.Instance.Invoke("RestartUI", 3f);         
+        }
     }
     void ChangeLevel(int Level)
     {
+        ColorChange?.Invoke(1);
         AllLevelsObjs[CurLevel - 1].SetActive(false);
         if (Level > AllLevels)
         {
@@ -121,7 +150,9 @@ public class GameManager : MonoBehaviour
         blackArrive = false;
         AllLevelsObjs[Level-1].SetActive(true);
         WhiteStarts[Level - 1].Func();
+        WhiteStarts[Level - 1].arrive = false;
         BlackStarts[Level - 1].Func();
+        BlackStarts[Level - 1].arrive = false;
         if (Level == 1 && PlayerPrefs.GetInt("Teach", 0) == 0)
         {
             StartCoroutine(UIManager.Instance.Teach());
@@ -200,25 +231,34 @@ public class GameManager : MonoBehaviour
     public void ChangeSide(int fiction)
     {
         if (whiteArrive) {
+            ColorChange?.Invoke(1);
             WhiteSnake.Moveable = false;
             BlackSnake.Moveable = true;
         }
         else if (blackArrive)
         {
+            ColorChange?.Invoke(0);
             WhiteSnake.Moveable = true;
             BlackSnake.Moveable = false;
         }
         else if (fiction == 0)
         {
+            ColorChange?.Invoke(1);
             WhiteSnake.Moveable = true;
             BlackSnake.Moveable = false;
         }
         else
         {
+            ColorChange?.Invoke(0);
             WhiteSnake.Moveable = false;
             BlackSnake.Moveable = true;
         }
         MoveTimes--;
+        if(CurLevel == 1)
+        {
+            if (MoveTimes <= 0) {TeachFlash(Direction.NULL); return; }
+            TeachFlash?.Invoke(TeachSteps[4-MoveTimes]);
+        }
     }
     private void Start()
     {
@@ -233,6 +273,14 @@ public class GameManager : MonoBehaviour
     }
     public void Restart()
     {
+        over = false;
         LevelChange?.Invoke(CurLevel);
-    }    
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space)&&(!(whiteArrive&&blackArrive))&&Time.timeScale == 1)
+        {
+            GameOver();
+        }
+    }
 }

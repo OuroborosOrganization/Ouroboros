@@ -34,8 +34,7 @@ public class UIInterect : MonoBehaviour
     }
     public void StartNewGame()
     {
-        PlayerPrefs.DeleteKey("AutoSave");
-        PlayerPrefs.DeleteKey("isSaved");
+        PlayerPrefs.DeleteAll();
         SceneManager.LoadScene(1);
     }
     public void ContinueGame()

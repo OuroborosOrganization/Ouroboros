@@ -5,9 +5,12 @@ using UnityEngine.SceneManagement;
 
 public class UIInterect : MonoBehaviour
 {
+    public void Win()
+    {
+        UIManager.Instance.WinUI();
+    }
     public void OpenSetting()
     {
-        
         for(int i = 0;i<transform.childCount;i++)
         {
             if (transform.GetChild(i).gameObject.name == "Menu")

@@ -66,7 +66,10 @@ public class GameManager : MonoBehaviour
         {
             curMovingSnake = value;
             //¿ÉÄÜÎªnull
-            Move?.Invoke(curMovingSnake); 
+            if(CurLevel == 1)
+            {
+                Move?.Invoke(curMovingSnake);
+            }
         }
     }
     [SerializeField] private bool whiteArrive =false;
@@ -121,11 +124,16 @@ public class GameManager : MonoBehaviour
     public event Action<CharacterMove> Move;
     public event Action<int> ColorChange;
     public event Action<Direction> TeachFlash ;
-
+    public event Action<int> EffectPlay;
+    public void InvokeEffectPlay(int type)
+    {
+        EffectPlay?.Invoke(type);
+    }
     public void GameOver()
     {
         if(!over)
         {
+            EffectPlay?.Invoke(1);
             over = true;
             WhiteSnake?.Died();
             BlackSnake?.Died();
@@ -136,14 +144,14 @@ public class GameManager : MonoBehaviour
     void ChangeLevel(int Level)
     {
         ColorChange?.Invoke(1);
-        AllLevelsObjs[CurLevel - 1].SetActive(false);
         if (Level > AllLevels)
         {
             instance = null;
             UIManager.Instance.WinUI();
             Destroy(gameObject);
             return;
-        }         
+        }
+        if (CurLevel != Level) { EffectPlay?.Invoke(2); }
         CurLevel = Level;
         MoveTimes = AllLevelsMoveTimes[Level - 1];
         whiteArrive = false;
@@ -231,13 +239,13 @@ public class GameManager : MonoBehaviour
     public void ChangeSide(int fiction)
     {
         if (whiteArrive) {
-            ColorChange?.Invoke(1);
+            ColorChange?.Invoke(0);
             WhiteSnake.Moveable = false;
             BlackSnake.Moveable = true;
         }
         else if (blackArrive)
         {
-            ColorChange?.Invoke(0);
+            ColorChange?.Invoke(1);
             WhiteSnake.Moveable = true;
             BlackSnake.Moveable = false;
         }
@@ -266,6 +274,7 @@ public class GameManager : MonoBehaviour
         diedMaterial = Resources.Load<Material>("Material/Died");
         LevelChange?.Invoke(PlayerPrefs.GetInt("AutoSave", 1));
         UIManager.Instance.gameObject.SetActive(true);
+        EffectPlay += MusicPlayer.Instance.PlayEffect;
     }
     public void StartNewGame()
     {
@@ -278,7 +287,7 @@ public class GameManager : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space)&&(!(whiteArrive&&blackArrive))&&Time.timeScale == 1)
+        if (Input.GetKeyDown(KeyCode.Space)&&(!(whiteArrive&&blackArrive)) && CurLevel!=1)
         {
             GameOver();
         }

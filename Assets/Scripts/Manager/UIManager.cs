@@ -47,13 +47,20 @@ public class UIManager : MonoBehaviour
     private GameObject Settings;
     private GameObject WinImage;
     private List<Image> UITeach = new List<Image>();
+    private GameObject WinBack;
+    private GameObject FinalUI;
     private string[] TeachTexts = new string[] {"黑白双蛇回合制移动，在限制回合数内达成衔尾连接即完成关卡\n" +
         "Black and white double snake turn-based movement, reach the tail connection within the limited number of rounds to complete the level."
         ,"灰色方块为障碍物，触碰到障碍物后停止运动\n"+"The gray square is an obstacle. Stop moving after touching the obstacle."};
+    private string FinalTop = new string ("感谢游玩\r\nThank you for playing");
     public event Action<CharacterMove> DirHighLighted;
     // Start is called before the first frame update
     private void Load()
     {
+        WinBack = GameObject.Find("WinBack");
+        Color a =  WinBack.GetComponent<MeshRenderer>().material.color;
+        WinBack.GetComponent<MeshRenderer>().material.color = new Color(a.r, a.g, a.b, 0);
+        WinBack.SetActive(false);   
         canvas = Instantiate(Resources.Load<GameObject>("Pre/Menu"));
         for (int i = 0; i < canvas.transform.childCount; i++)
         {
@@ -87,8 +94,8 @@ public class UIManager : MonoBehaviour
                 case "Settings":
                     Settings = canvas.transform.GetChild(i).gameObject;
                     break;
-                case "WinImage":
-                    WinImage = canvas.transform.GetChild(i).gameObject;
+                case "FinalUI":
+                    FinalUI = canvas.transform.GetChild(i).gameObject;
                     break;
                 default:
                     break;
@@ -120,7 +127,6 @@ public class UIManager : MonoBehaviour
         GameManager.Instance.WhiteSnake.Moveable = false;
         TeachText.gameObject.SetActive(true);
         TeachText.SetText("");
-        Time.timeScale = 0;
         for (int i = 0; i < TeachTexts.Length; i++)
         {
             TeachText.SetText(TeachTexts[i]);
@@ -137,7 +143,6 @@ public class UIManager : MonoBehaviour
             yield return new WaitUntil(() => { return Input.anyKeyDown; });
         }
         StopFlash();
-        Time.timeScale = 1;
         GameManager.Instance.WhiteSnake.Moveable = true;
     }
     public void WinUI()
@@ -146,15 +151,65 @@ public class UIManager : MonoBehaviour
     }
     private IEnumerator Win()
     {
-        Time.timeScale = 0;
-        WinImage.gameObject.SetActive(true);
-        yield return new WaitForSecondsRealtime(3);
+        WinBack.SetActive(true);
+        MeshRenderer temp = WinBack.GetComponent<MeshRenderer>();
+        Color a = temp.material.color;
+        int i = 0;
+        while (temp.material.color.a<0.99f)
+        {
+            RemainStep.color -= new Color(0, 0, 0, 0.02f);
+            Tip.GetComponent<Image>().color -= new Color(0, 0, 0, 0.02f);
+            for(i = 0;i < Tip.transform.childCount;i++)
+            {
+                Tip.transform.GetChild(i).GetComponent<Image>().color -= new Color(0, 0, 0, 0.02f);
+            }
+            colorTip.GetComponent<Image>().color -= new Color(0, 0, 0, 0.02f);
+            TeachText.color -= new Color(0, 0, 0, 0.02f);
+            temp.material.color += new Color(0, 0, 0, 0.02f);
+            yield return new WaitForSeconds(0.02f);
+        }
+        FinalUI.SetActive(true);
+        TextMeshProUGUI t = FinalUI.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+        t.SetText("");
+        i = 0;
+        while(i<FinalTop.Length)
+        {
+            t.SetText(t.text+FinalTop[i]);
+            yield return new WaitForSeconds(0.1f);
+            i++;
+        }
+        t = FinalUI.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+        yield return FlashOnce(t, Color.black);
+        Transform t1 = FinalUI.transform.GetChild(2);
+        Transform t2 = FinalUI.transform.GetChild(3);
+        for(i = 0;i<t1.childCount;i++)
+        {
+            yield return FlashOnce(t1.GetChild(i).GetComponent<TextMeshProUGUI>(),Color.black);
+            yield return FlashOnce(t2.GetChild(i).GetComponent <TextMeshProUGUI>(), Color.black);
+            yield return new WaitForSeconds(0.2f);
+        }
+        i = 0;
+        while(i<49)
+        {
+            i++;
+            FinalUI.transform.GetChild(0).GetComponent<TextMeshProUGUI>().color -= new Color(0, 0, 0, 0.02f);
+            FinalUI.transform.GetChild(1).GetComponent<TextMeshProUGUI>().color -= new Color(0, 0, 0, 0.02f);
+            for(int j = 0;j<t1.childCount;j++)
+            {
+                t1.GetChild(j).GetComponent<TextMeshProUGUI>().color -= new Color(0, 0, 0, 0.02f);
+            }
+            for (int j = 0; j < t2.childCount; j++)
+            {
+                t2.GetChild(j).GetComponent<TextMeshProUGUI>().color -= new Color(0, 0, 0, 0.02f);
+            }
+            yield return new WaitForSeconds(0.02f);
+        }
+        StartCoroutine(FlashOnce(FinalUI.transform.GetChild(5).GetComponent<TextMeshProUGUI>(), Color.black));
+        yield return FlashOnce(FinalUI.transform.GetChild(4).GetComponent<Image>());
         yield return new WaitUntil(() => { return Input.anyKeyDown; });
-        Time.timeScale = 1;
-        TeachText.autoSizeTextContainer = false;
-        TeachText.gameObject.SetActive(false);
-        SceneManager.LoadScene(0);
         Destroy(gameObject);
+        Destroy(canvas);
+        SceneManager.LoadScene(0);
     }
     public void RestartUI()
     {
@@ -240,6 +295,20 @@ public class UIManager : MonoBehaviour
         {
             target.color += new Color(0, 0, 0, 0.02f) * (1 + Mathf.Sin(Mathf.PI * timer)) * 0.5f;
             yield return new WaitForSecondsRealtime(0.02f);
+            timer += 0.02f;
+        }
+        yield break;
+    }
+
+    IEnumerator FlashOnce(TextMeshProUGUI target,Color color)
+    {
+        target.gameObject.SetActive(true);
+        target.color = color - new Color(0,0,0,color.a);
+        float timer = 0;
+        while (target.color.a < 0.99f)
+        {
+            target.color += new Color(0, 0, 0, 0.02f) ;
+            yield return new WaitForSeconds(0.02f);
             timer += 0.02f;
         }
         yield break;

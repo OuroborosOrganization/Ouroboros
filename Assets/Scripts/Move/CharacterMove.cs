@@ -110,6 +110,7 @@ public class CharacterMove : MonoBehaviour
     }
     public void Arrive()
     {
+        GameManager.Instance.InvokeEffectPlay(0);
         moveable = false;
         isMoving = false ;
         if (BodyColor == 0)
@@ -143,6 +144,7 @@ public class CharacterMove : MonoBehaviour
                 b.center += MoveDir * 0.025f;
                 LastDirection = CurDirection;
                 GameManager.Instance.CurMovingSnake = this;
+                GameManager.Instance.InvokeEffectPlay(3);
             }
         }
         

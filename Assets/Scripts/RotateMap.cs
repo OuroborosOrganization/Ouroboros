@@ -5,7 +5,7 @@ using UnityEngine;
 public class NewBehaviourScript : MonoBehaviour
 {
     // Start is called before the first frame update
-    [SerializeField] public float rotationSpeed = 90f;
+    [SerializeField] public float rotationSpeed = 22.5f;
     int count = 0;
     private void Awake()
     {
@@ -51,6 +51,7 @@ public class NewBehaviourScript : MonoBehaviour
                 }
                 yield return null;
             }
+            GameManager.Instance.AllLevelsObjs[Level - 2].SetActive(false);
             transform.rotation = originalRotation * Quaternion.Euler(-90, 0, 0);
         }
     }
